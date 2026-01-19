@@ -3,13 +3,12 @@ import numpy as np
 from ib_insync import *
 from arch import arch_model
 from scipy.optimize import minimize
-import datetime
 import warnings
 warnings.filterwarnings("ignore")
 
-# ==========================================
+# ===================================================
 # PARTE 1: MATEMÁTICA CUANTITATIVA (DCC-GARCH Proxy)
-# ==========================================
+# ===================================================
 
 def fit_garch_ewma_dcc(returns, lambda_corr=0.94):
     """
@@ -21,7 +20,6 @@ def fit_garch_ewma_dcc(returns, lambda_corr=0.94):
     """
     print("Ajustando GARCH(1,1) y Correlación Dinámica...")
     
-    n_assets = returns.shape[1]
     volatilities = []
     std_resids = pd.DataFrame(index=returns.index, columns=returns.columns)
     
@@ -101,7 +99,7 @@ def optimize_portfolio_sharpe(cov_matrix, expected_returns):
     return res.x
 
 # ==========================================
-# PARTE 2: INFRAESTRUCTURA DE DATOS IBKR
+# PARTE 2: SACAR DATOS DE IBKR Y EJECUTAR
 # ==========================================
 
 def get_ibkr_data(ib, tickers, duration='2 Y', bar_size='1 day'):
@@ -133,7 +131,6 @@ def get_ibkr_data(ib, tickers, duration='2 Y', bar_size='1 day'):
 def get_market_price(ib, contract):
     """Obtiene snapshot del precio actual (Bid/Ask) para definir el límite."""
     # Solicitamos datos de mercado en vivo (Snapshot)
-    # Importante: Si es paper trading y el mercado está cerrado, esto puede devolver nan.
     ticker_data = ib.reqMktData(contract, '', False, False)
     ib.sleep(2) # Esperar a que lleguen los ticks
     
@@ -156,14 +153,14 @@ def get_market_price(ib, contract):
 
 def main():
     # CONFIGURACIÓN
-    # Tu mix sólido: Autos, Salud, Tech (Hardware), Finanzas
+    # El chiste es agarrar acciones de diferentes sectores para q el modelo tenga de dónde escoger
     TICKERS = ['F', 'PFE', 'HPE', 'BAC'] 
     PORT = 7496 
     
     ib = IB()
     try:
         print("Conectando a IBKR (Puerto 7496)...")
-        # Usamos clientId=102 para asegurar sesión limpia
+        # Usamos clientId=102 pq la regué con 101 antes
         ib.connect('127.0.0.1', PORT, clientId=102) 
         ib.reqMarketDataType(3) 
         print("Usando datos diferidos (15 min de retraso).")
